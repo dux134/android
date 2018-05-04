@@ -22,10 +22,13 @@ package com.owncloud.android.ui.activity;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -36,6 +39,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.owncloud.android.BuildConfig;
 import com.owncloud.android.MainApp;
 import com.owncloud.android.R;
 import com.owncloud.android.authentication.AccountUtils;
@@ -58,59 +62,18 @@ public abstract class DrawerActivity extends ToolbarActivity {
     private static final int MENU_ORDER_ACCOUNT = 1;
     private static final int MENU_ORDER_ACCOUNT_FUNCTION = 2;
 
-    /**
-     * menu account avatar radius.
-     */
     private float mMenuAccountAvatarRadiusDimension;
-
-    /**
-     * current account avatar radius.
-     */
     private float mCurrentAccountAvatarRadiusDimension;
-
-    /**
-     * other accounts avatar radius.
-     */
     private float mOtherAccountAvatarRadiusDimension;
 
-    /**
-     * Reference to the drawer layout.
-     */
     private DrawerLayout mDrawerLayout;
-
-    /**
-     * Reference to the drawer toggle.
-     */
     private ActionBarDrawerToggle mDrawerToggle;
-
-    /**
-     * Reference to the navigation view.
-     */
     private NavigationView mNavigationView;
-
-    /**
-     * Reference to the account chooser toggle.
-     */
     private ImageView mAccountChooserToggle;
-
-    /**
-     * Reference to the middle account avatar.
-     */
     private ImageView mAccountMiddleAccountAvatar;
-
-    /**
-     * Reference to the end account avatar.
-     */
     private ImageView mAccountEndAccountAvatar;
 
-    /**
-     * Flag to signal if the account chooser is active.
-     */
     private boolean mIsAccountChooserActive;
-
-    /**
-     * Id of the checked menu item.
-     */
     private int mCheckedMenuItem = Menu.NONE;
 
     /**
@@ -134,9 +97,9 @@ public abstract class DrawerActivity extends ToolbarActivity {
      * This method needs to be called after the content view has been set.
      */
     protected void setupDrawer() {
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
 
-        mNavigationView = (NavigationView) findViewById(R.id.nav_view);
+        mNavigationView = findViewById(R.id.nav_view);
         if (mNavigationView != null) {
             mAccountChooserToggle = (ImageView) findNavigationViewChildById(R.id.drawer_account_chooser_toogle);
             mAccountChooserToggle.setImageResource(R.drawable.ic_down);
@@ -236,6 +199,12 @@ public abstract class DrawerActivity extends ToolbarActivity {
                                         ManageAccountsActivity.class);
                                 startActivityForResult(manageAccountsIntent, ACTION_MANAGE_ACCOUNTS);
                                 break;
+                            case R.id.drawer_menu_feedback:
+                                openFeedback();
+                                break;
+                            case R.id.drawer_menu_help:
+                                openHelp();
+                                break;
                             case Menu.NONE:
                                 // account clicked
                                 accountClicked(menuItem.getTitle().toString());
@@ -250,9 +219,31 @@ public abstract class DrawerActivity extends ToolbarActivity {
         // handle correct state
         if (mIsAccountChooserActive) {
             mNavigationView.getMenu().setGroupVisible(R.id.drawer_menu_accounts, true);
+
         } else {
             mNavigationView.getMenu().setGroupVisible(R.id.drawer_menu_accounts, false);
         }
+    }
+
+    private void openHelp() {
+        final String helpWeb = (String) getText(R.string.url_help);
+        if (helpWeb != null && helpWeb.length() > 0) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(helpWeb));
+            startActivity(intent);
+        }
+    }
+
+    private void openFeedback() {
+        String feedbackMail = (String) getText(R.string.mail_feedback);
+        String feedback = getText(R.string.drawer_feedback) +
+                " - android v" + BuildConfig.VERSION_NAME;
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, feedback);
+
+        intent.setData(Uri.parse(feedbackMail));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     /**
@@ -478,10 +469,12 @@ public abstract class DrawerActivity extends ToolbarActivity {
                 mAccountChooserToggle.setImageResource(R.drawable.ic_up);
                 mNavigationView.getMenu().setGroupVisible(R.id.drawer_menu_accounts, true);
                 mNavigationView.getMenu().setGroupVisible(R.id.drawer_menu_standard, false);
+                mNavigationView.getMenu().setGroupVisible(R.id.drawer_menu_settings_etc, false);
             } else {
                 mAccountChooserToggle.setImageResource(R.drawable.ic_down);
                 mNavigationView.getMenu().setGroupVisible(R.id.drawer_menu_accounts, false);
                 mNavigationView.getMenu().setGroupVisible(R.id.drawer_menu_standard, true);
+                mNavigationView.getMenu().setGroupVisible(R.id.drawer_menu_settings_etc, true);
             }
         }
     }
