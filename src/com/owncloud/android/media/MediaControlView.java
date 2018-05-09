@@ -123,7 +123,7 @@ public class MediaControlView extends FrameLayout /* implements OnLayoutChangeLi
         mDecor = mWindow.getDecorView();
         mDecor.setOnTouchListener(mTouchListener);
         mWindow.setContentView(this);
-        mWindow.setBackgroundDrawableResource(android.R.color.transparent);
+        mWindow.setBackgroundDrawableResource(android.R.color.transparent_cloud);
         
         // While the media controller is up, the volume control keys should
         // affect the media stream type
